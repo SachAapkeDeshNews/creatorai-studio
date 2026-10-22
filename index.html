@@ -187,6 +187,95 @@ function openTool(key){
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===key));
  window.scrollTo({top:0,behavior:"smooth"});
 }
+function saveProject() {
+  const topic = document.getElementById("topic").value.trim();
+  const result = document.getElementById("result").textContent;
+
+  if (!topic || !result) {
+    alert("Pehle ek draft generate karo.");
+    return;
+  }
+
+  let projects = [];
+  try {
+    projects = JSON.parse(localStorage.getItem("creatorai_projects") || "[]");
+  } catch (error) {
+    projects = [];
+  }
+
+  projects.unshift({
+    id: Date.now(),
+    topic: topic,
+    tool: current,
+    platform: document.getElementById("platform").value,
+    style: document.getElementById("style").value,
+    details: document.getElementById("details").value,
+    result: result
+  });
+
+  localStorage.setItem("creatorai_projects", JSON.stringify(projects.slice(0, 50)));
+  renderProjects();
+  alert("Project browser mein save ho gaya!");
+}
+
+function renderProjects() {
+  const container = document.getElementById("savedProjects");
+  if (!container) return;
+
+  let projects = [];
+  try {
+    projects = JSON.parse(localStorage.getItem("creatorai_projects") || "[]");
+  } catch (error) {
+    projects = [];
+  }
+
+  container.replaceChildren();
+
+  if (!projects.length) {
+    container.textContent = "Abhi koi saved project nahi hai.";
+    return;
+  }
+
+  projects.forEach(project => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.marginTop = "10px";
+
+    const title = document.createElement("h3");
+    title.textContent = project.topic;
+
+    const info = document.createElement("p");
+    info.textContent = (tools[project.tool]?.title || "Project") + " · " + project.platform;
+
+    const open = document.createElement("button");
+    open.className = "secondary";
+    open.textContent = "Open";
+    open.onclick = () => {
+      openTool(project.tool);
+      document.getElementById("topic").value = project.topic;
+      document.getElementById("platform").value = project.platform;
+      document.getElementById("style").value = project.style;
+      document.getElementById("details").value = project.details;
+      document.getElementById("result").textContent = project.result;
+      document.getElementById("outputArea").hidden = false;
+    };
+
+    const remove = document.createElement("button");
+    remove.className = "secondary";
+    remove.textContent = "Delete";
+    remove.style.marginLeft = "8px";
+    remove.onclick = () => {
+      if (!confirm("Is project ko delete karna hai?")) return;
+      const updated = projects.filter(p => p.id !== project.id);
+      localStorage.setItem("creatorai_projects", JSON.stringify(updated));
+      renderProjects();
+    };
+
+    card.append(title, info, open, remove);
+    container.appendChild(card);
+  });
+    }
+  
 function showHome(){
  document.getElementById("home").hidden=false;
  document.getElementById("editor").hidden=true;
