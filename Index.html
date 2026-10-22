@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CreatorAI Studio</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1020;
+      color: white;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    h1 { color: #a78bfa; font-size: 38px; }
+    p { color: #cbd5e1; line-height: 1.7; }
+    .tools {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 24px;
+      background: #171f35;
+      border-radius: 16px;
+    }
+    button {
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 8px;
+      background: #7c3aed;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>✦ CreatorAI Studio</h1>
+  <p>Your all-in-one creative workspace.</p>
+
+  <div class="tools">
+    <h2>Welcome, Creator!</h2>
+    <p>Write scripts, plan videos, create captions and explore new ideas.</p>
+    <button onclick="makeIdea()">Generate an Idea</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    function makeIdea() {
+      document.getElementById("result").textContent =
+        "Create a short video sharing 5 surprising facts about your favourite topic!";
+    }
+  </script>
+</body>
+</html>
+
