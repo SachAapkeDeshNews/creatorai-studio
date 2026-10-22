@@ -1,54 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CreatorAI Studio</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1020;
-      color: white;
-      text-align: center;
-      padding: 60px 20px;
-    }
-    h1 { color: #a78bfa; font-size: 38px; }
-    p { color: #cbd5e1; line-height: 1.7; }
-    .tools {
-      max-width: 600px;
-      margin: 30px auto;
-      padding: 24px;
-      background: #171f35;
-      border-radius: 16px;
-    }
-    button {
-      padding: 12px 20px;
-      border: 0;
-      border-radius: 8px;
-      background: #7c3aed;
-      color: white;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreatorAI Studio</title>
+<style>
+:root{--bg:#0b1020;--panel:#141c30;--line:#293550;--text:#f4f6ff;--muted:#a8b3cb;--accent:#8b5cf6;--cyan:#22d3ee}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{padding:24px 15px;border-right:1px solid var(--line);background:#0e1527}
+.logo{font-size:20px;font-weight:800;padding:4px 10px 28px}
+.logo span{color:var(--cyan)}
+.nav{display:flex;flex-direction:column;gap:7px}
+.nav button{background:transparent;color:var(--muted);border:0;text-align:left;padding:12px;border-radius:9px}
+.nav button:hover,.nav button.active{background:#282343;color:white}
+.side-note{font-size:12px;color:var(--muted);line-height:1.6;margin:25px 10px}
+main{padding:25px;min-width:0;max-width:1200px;width:100%;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}
+.top small,.muted{color:var(--muted)}
+h1{font-size:clamp(25px,4vw,36px);margin:22px 0 8px}
+h2{font-size:21px}
+p{line-height:1.6}
+.hero{padding:22px 0}
+.hero p{color:var(--muted);max-width:650px}
+.gradient{background:linear-gradient(90deg,#c4b5fd,#22d3ee);background-clip:text;color:transparent}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.stat,.card,.workspace{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stat strong{display:block;font-size:23px;margin:9px 0}
+.stat span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.card{transition:.15s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.emoji{font-size:26px}
+.card h3{margin:12px 0 7px;font-size:16px}
+.card p{font-size:13px;color:var(--muted);min-height:42px}
+.primary,.secondary{border:0;border-radius:9px;padding:11px 14px}
+.primary{background:linear-gradient(90deg,#7c3aed,#6366f1);color:white;font-weight:bold}
+.secondary{background:#293650;color:white}
+.card button{width:100%}
+.workspace{margin-top:20px}
+.workspace-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+label{display:block;margin:15px 0 7px;font-size:13px;color:#d3d9e8}
+input,textarea,select{width:100%;padding:12px;background:#0b1222;color:white;border:1px solid #34415e;border-radius:9px}
+textarea{min-height:115px;resize:vertical}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+#result{white-space:pre-wrap;line-height:1.75;overflow-wrap:anywhere;margin-top:16px}
+.notice{color:var(--muted);font-size:12px;line-height:1.7}
+.empty{color:var(--muted);padding:12px 0}
+footer{color:var(--muted);font-size:12px;padding:24px 0}
+@media(max-width:850px){.app{grid-template-columns:1fr}aside{padding:15px;border-right:0;border-bottom:1px solid var(--line)}.logo{padding:3px 5px 15px}.nav{flex-direction:row;overflow-x:auto}.nav button{white-space:nowrap;padding:10px}.side-note{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:18px}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.stat{padding:13px}main{padding:14px}}
+</style>
 </head>
 <body>
-  <h1>✦ CreatorAI Studio</h1>
-  <p>Your all-in-one creative workspace.</p>
+<div class="app">
+<aside>
+  <div class="logo">✦ Creator<span>AI</span></div>
+  <nav class="nav" id="nav">
+    <button class="active" data-page="home">⌂ Dashboard</button>
+    <button data-page="script">✍️ Script Writer</button>
+    <button data-page="caption">#️⃣ Captions</button>
+    <button data-page="ideas">💡 Ideas</button>
+    <button data-page="video">🎬 Video Planner</button>
+    <button data-page="image">🖼️ Image Prompts</button>
+    <button data-page="audio">🎙️ Voice-over</button>
+  </nav>
+  <div class="side-note">Your creative workspace<br>Starter edition · Free to use</div>
+</aside>
 
-  <div class="tools">
-    <h2>Welcome, Creator!</h2>
-    <p>Write scripts, plan videos, create captions and explore new ideas.</p>
-    <button onclick="makeIdea()">Generate an Idea</button>
-    <p id="result"></p>
+<main>
+  <div class="top">
+    <div><strong>CreatorAI Studio</strong><br><small>Your ideas start here</small></div>
+    <span class="notice">✦ CREATOR WORKSPACE</span>
   </div>
 
-  <script>
-    function makeIdea() {
-      document.getElementById("result").textContent =
-        "Create a short video sharing 5 surprising facts about your favourite topic!";
-    }
-  </script>
+  <section id="home">
+    <div class="hero">
+      <div class="gradient">CREATE · PLAN · PUBLISH</div>
+      <h1>Make something <span class="gradient">amazing.</span></h1>
+      <p>One simple workspace for content ideas, scripts, social captions, video plans and creative prompts.</p>
+      <button class="primary" onclick="openTool('script')">Start creating →</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">✍️<strong>6 tools</strong><span>Creative utilities</span></div>
+      <div class="stat">⚡<strong>Instant</strong><span>Local draft templates</span></div>
+      <div class="stat">₹0<strong>Free</strong><span>No API key required</span></div>
+    </div>
+
+    <h2>Your creative tools</h2>
+    <div class="grid" id="cards"></div>
+  </section>
+
+  <section class="workspace" id="editor" hidden>
+    <div class="workspace-head">
+      <h2 id="toolTitle">Script Writer</h2>
+      <button class="secondary" onclick="showHome()">← Dashboard</button>
+    </div>
+    <p class="notice" id="toolDesc">Turn your topic into a useful first draft.</p>
+
+    <label for="topic">Topic or idea</label>
+    <input id="topic" placeholder="Example: 5 facts about space">
+
+    <label for="platform">Platform</label>
+    <select id="platform">
+      <option>YouTube</option>
+      <option>YouTube Shorts</option>
+      <option>Instagram</option>
+      <option>Facebook</option>
+      <option>TikTok</option>
+      <option>Blog or website</option>
+    </select>
+
+    <label for="style">Tone</label>
+    <select id="style">
+      <option>Engaging and friendly</option>
+      <option>Professional</option>
+      <option>Funny and energetic</option>
+      <option>Educational</option>
+      <option>Dramatic storytelling</option>
+    </select>
+
+    <label for="details">Extra instructions (optional)</label>
+    <textarea id="details" placeholder="Audience, language, length, key points..."></textarea>
+
+    <div class="actions">
+      <button class="primary" onclick="generate()">Generate draft ✦</button>
+      <button class="secondary" onclick="clearDraft()">Clear</button>
+    </div>
+
+    <div id="outputArea" hidden>
+      <h3>Your draft</h3>
+      <div id="result"></div>
+      <div class="actions">
+        <button class="secondary" onclick="copyDraft()">Copy text</button>
+        <button class="secondary" onclick="downloadDraft()">Download .txt</button>
+      </div>
+    </div>
+    <p class="notice">This starter edition generates templates in your browser. It is not connected to a real AI model and does not render actual image, video or audio files.</p>
+  </section>
+
+  <footer>CreatorAI Studio · Built for creative minds</footer>
+</main>
+</div>
+
+<script>
+const tools={
+ script:{icon:"✍️",title:"Script Writer",desc:"Build a first draft for a video, story or presentation.",button:"Write a script"},
+ caption:{icon:"#️⃣",title:"Captions & Hashtags",desc:"Create a social caption with a call to action.",button:"Create caption"},
+ ideas:{icon:"💡",title:"Idea Generator",desc:"Find angles and topics for your next post.",button:"Generate ideas"},
+ video:{icon:"🎬",title:"Video Planner",desc:"Outline a video with scenes and shot suggestions.",button:"Plan a video"},
+ image:{icon:"🖼️",title:"Image Prompt Builder",desc:"Create a detailed prompt for an external image AI tool.",button:"Build prompt"},
+ audio:{icon:"🎙️",title:"Voice-over Planner",desc:"Prepare narration and recording direction.",button:"Write voice-over"}
+};
+let current="script";
+const cards=document.getElementById("cards");
+Object.keys(tools).forEach(key=>{
+ const t=tools[key];
+ const article=document.createElement("article");
+ article.className="card";
+ const icon=document.createElement("div");icon.className="emoji";icon.textContent=t.icon;
+ const h=document.createElement("h3");h.textContent=t.title;
+ const p=document.createElement("p");p.textContent=t.desc;
+ const b=document.createElement("button");b.className="primary";b.textContent=t.button+" →";b.onclick=()=>openTool(key);
+ article.append(icon,h,p,b);cards.appendChild(article);
+});
+document.getElementById("nav").addEventListener("click",e=>{
+ const b=e.target.closest("button[data-page]");
+ if(!b)return;
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");
+ if(b.dataset.page==="home")showHome();else openTool(b.dataset.page);
+});
+function openTool(key){
+ if(!tools[key])return;
+ current=key;
+ document.getElementById("home").hidden=true;
+ document.getElementById("editor").hidden=false;
+ document.getElementById("toolTitle").textContent=tools[key].icon+" "+tools[key].title;
+ document.getElementById("toolDesc").textContent=tools[key].desc;
+ document.getElementById("outputArea").hidden=true;
+ document.getElementById("topic").focus();
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===key));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function showHome(){
+ document.getElementById("home").hidden=false;
+ document.getElementById("editor").hidden=true;
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page==="home"));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function generate(){
+ const topic=document.getElementById("topic").value.trim();
+ const platform=document.getElementById("platform").value;
+ const style=document.getElementById("style").value;
+ const details=document.getElementById("details").value.trim();
+ if(!topic){alert("Please enter a topic first.");document.getElementById("topic").focus();return;}
+ const tag=topic.split(/\s+/).join("").replace(/[^a-zA-Z0-9]/g,"");
+ let text="";
+ if(current==="script"){
+ text=`TITLE: ${topic}\nPLATFORM: ${platform}\nTONE: ${style}\n\nHOOK\nHave you ever wondered about ${topic}? Stay with me to discover why it matters.\n\nMAIN SECTION\n1. Introduce ${topic} and explain why the audience should care.\n2. Share an interesting fact, example or key detail.\n3. Explain the main takeaway in simple language.\n\nCLOSING\nWhat do you think about ${topic}? Share your thoughts and follow for more.\n\nPRODUCTION NOTE\nAdd relevant visuals, clear on-screen text and natural pauses.`;
+ }else if(current==="caption"){
+ text=`${topic} ✨\n\nDiscover something interesting about ${topic}. Save this post for later and share it with someone who would enjoy it!\n\nWhat do you think? Tell me below 👇\n\n#${tag.slice(0,35)} #ContentCreator #CreatorCommunity #LearnSomethingNew\n\nPlatform: ${platform}\nTone: ${style}`;
+ }else if(current==="ideas"){
+ text=`CONTENT IDEAS: ${topic}\n\n1. Beginner's guide to ${topic}\n2. Five surprising facts about ${topic}\n3. Common mistakes people make with ${topic}\n4. Myth versus reality: ${topic}\n5. A step-by-step tutorial about ${topic}\n6. What people often misunderstand about ${topic}\n7. Answer the most common audience question about ${topic}\n8. Tell a short story connected to ${topic}\n9. Compare two approaches to ${topic}\n10. Make a quick checklist for ${topic}\n\nChoose an idea and adapt it to ${platform}.`;
+ }else if(current==="video"){
+ text=`VIDEO PLAN: ${topic}\nPLATFORM: ${platform}\n\nSCENE 1 — HOOK (opening)\nOpen with a question or striking visual connected to ${topic}.\n\nSCENE 2 — SETUP\nExplain what the video covers and why it matters.\n\nSCENE 3 — MAIN CONTENT\nBreak the subject into three clear points. Capture supporting shots and add readable on-screen text.\n\nSCENE 4 — WRAP-UP\nSummarise the main takeaway and invite viewers to comment or follow.\n\nSHOT CHECKLIST\n□ Opening shot\n□ Main talking-head or demonstration shots\n□ Supporting footage\n□ Close-up details\n□ Closing shot`;
+ }else if(current==="image"){
+ text=`IMAGE GENERATION PROMPT\n\nCreate a high-quality image about: ${topic}.\nVisual direction: ${style}.\nComposition: clear focal subject, balanced layout, thoughtful lighting, detailed textures and polished professional finish.\nIntended platform: ${platform}.\n\nAvoid blurry details, distorted objects, clutter and unwanted watermarks. Specify any text separately if your image tool supports accurate text rendering.\n\nThis is a text prompt, not an image file. Paste it into an image-generation service to create an image.`;
+ }else{
+ text=`VOICE-OVER DRAFT: ${topic}\nPLATFORM: ${platform}\n\n[OPENING — engaging delivery]\nLet's explore ${topic}.\n\n[MAIN SECTION — clear, natural pace]\nStart with the most important point. Explain it in short sentences, then add an example or story that makes the message memorable.\n\n[CLOSING — warm delivery]\nThanks for listening. Follow for more content like this.\n\nRECORDING CHECKLIST\n• Record in a quiet room.\n• Keep a consistent distance from the microphone.\n• Leave natural pauses between sections.\n• Listen back and remove mistakes during editing.\n\nThis is a text draft, not an audio recording.`;
+ }
+ if(details)text+=`\n\nEXTRA INSTRUCTIONS\n${details}`;
+ document.getElementById("result").textContent=text;
+ document.getElementById("outputArea").hidden=false;
+}
+function clearDraft(){
+ document.getElementById("topic").value="";
+ document.getElementById("details").value="";
+ document.getElementById("outputArea").hidden=true;
+ document.getElementById("result").textContent="";
+}
+async function copyDraft(){
+ const text=document.getElementById("result").textContent;
+ try{
+ await navigator.clipboard.writeText(text);
+ alert("Draft copied!");
+ }catch(e){
+ const area=document.createElement("textarea");
+ area.value=text;document.body.appendChild(area);area.select();
+ const ok=document.execCommand("copy");area.remove();
+ alert(ok?"Draft copied!":"Copy failed. Select the result text and copy it manually.");
+ }
+}
+function downloadDraft(){
+ const text=document.getElementById("result").textContent;
+ const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="creatorai-draft.txt";a.click();
+ URL.revokeObjectURL(url);
+}
+</script>
 </body>
 </html>
 
