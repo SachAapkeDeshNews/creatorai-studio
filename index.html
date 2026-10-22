@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1020">
 <title>CreatorAI Studio</title>
 <style>
 :root{--bg:#0b1020;--panel:#141c30;--line:#293550;--text:#f4f6ff;--muted:#a8b3cb;--accent:#8b5cf6;--cyan:#22d3ee}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
 button,input,textarea,select{font:inherit}
 button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
 aside{padding:24px 15px;border-right:1px solid var(--line);background:#0e1527}
 .logo{font-size:20px;font-weight:800;padding:4px 10px 28px}
@@ -32,34 +35,44 @@ p{line-height:1.6}
 .stat strong{display:block;font-size:23px;margin:9px 0}
 .stat span{font-size:12px;color:var(--muted)}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
-.card{transition:.15s}
+.card{transition:border-color .15s,transform .15s;min-width:0}
 .card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .emoji{font-size:26px}
-.card h3{margin:12px 0 7px;font-size:16px}
-.card p{font-size:13px;color:var(--muted);min-height:42px}
-.primary,.secondary{border:0;border-radius:9px;padding:11px 14px}
+.card h3{margin:12px 0 7px;font-size:16px;overflow-wrap:anywhere}
+.card p{font-size:13px;color:var(--muted);min-height:42px;overflow-wrap:anywhere}
+.primary,.secondary,.danger{border:0;border-radius:9px;padding:11px 14px}
 .primary{background:linear-gradient(90deg,#7c3aed,#6366f1);color:white;font-weight:bold}
 .secondary{background:#293650;color:white}
+.danger{background:#5a2637;color:white}
+.primary:hover,.secondary:hover,.danger:hover{filter:brightness(1.12)}
 .card button{width:100%}
 .workspace{margin-top:20px}
 .workspace-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 label{display:block;margin:15px 0 7px;font-size:13px;color:#d3d9e8}
 input,textarea,select{width:100%;padding:12px;background:#0b1222;color:white;border:1px solid #34415e;border-radius:9px}
+input[type="file"]{padding:10px}
 textarea{min-height:115px;resize:vertical}
 .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
 #result{white-space:pre-wrap;line-height:1.75;overflow-wrap:anywhere;margin-top:16px}
 .notice{color:var(--muted);font-size:12px;line-height:1.7}
 .empty{color:var(--muted);padding:12px 0}
+.saved-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.saved-card{background:#10182b;border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.saved-card h3{overflow-wrap:anywhere}
+.saved-card p{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.saved-card .actions button{flex:1}
+.preview{margin-top:12px}
+.preview img{display:block;max-width:100%;max-height:320px;border-radius:10px;border:1px solid var(--line)}
 footer{color:var(--muted);font-size:12px;padding:24px 0}
 @media(max-width:850px){.app{grid-template-columns:1fr}aside{padding:15px;border-right:0;border-bottom:1px solid var(--line)}.logo{padding:3px 5px 15px}.nav{flex-direction:row;overflow-x:auto}.nav button{white-space:nowrap;padding:10px}.side-note{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:18px}}
-@media(max-width:480px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.stat{padding:13px}main{padding:14px}}
+@media(max-width:560px){.grid,.saved-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.stat{padding:13px}main{padding:14px}}
 </style>
 </head>
 <body>
 <div class="app">
 <aside>
   <div class="logo">✦ Creator<span>AI</span></div>
-  <nav class="nav" id="nav">
+  <nav class="nav" id="nav" aria-label="Main navigation">
     <button class="active" data-page="home">⌂ Dashboard</button>
     <button data-page="script">✍️ Script Writer</button>
     <button data-page="caption">#️⃣ Captions</button>
@@ -87,12 +100,27 @@ footer{color:var(--muted);font-size:12px;padding:24px 0}
 
     <div class="stats">
       <div class="stat">✍️<strong>6 tools</strong><span>Creative utilities</span></div>
-      <div class="stat">⚡<strong>Instant</strong><span>Local draft templates</span></div>
+      <div class="stat">⚡<strong>Instant</strong><span>Browser-based draft templates</span></div>
       <div class="stat">₹0<strong>Free</strong><span>No API key required</span></div>
     </div>
 
     <h2>Your creative tools</h2>
     <div class="grid" id="cards"></div>
+
+    <section class="workspace" id="savedSection">
+      <div class="workspace-head">
+        <div>
+          <h2>My Saved Projects</h2>
+          <p class="notice">Saved in this browser on this device.</p>
+        </div>
+        <div class="actions">
+          <button class="secondary" onclick="exportProjects()">Export backup</button>
+          <button class="secondary" onclick="document.getElementById('importProjects').click()">Import backup</button>
+          <input id="importProjects" type="file" accept=".json,application/json" hidden onchange="importProjects(event)">
+        </div>
+      </div>
+      <div id="savedProjects" class="saved-grid"></div>
+    </section>
   </section>
 
   <section class="workspace" id="editor" hidden>
@@ -103,7 +131,7 @@ footer{color:var(--muted);font-size:12px;padding:24px 0}
     <p class="notice" id="toolDesc">Turn your topic into a useful first draft.</p>
 
     <label for="topic">Topic or idea</label>
-    <input id="topic" placeholder="Example: 5 facts about space">
+    <input id="topic" maxlength="500" placeholder="Example: 5 facts about space">
 
     <label for="platform">Platform</label>
     <select id="platform">
@@ -125,10 +153,20 @@ footer{color:var(--muted);font-size:12px;padding:24px 0}
     </select>
 
     <label for="details">Extra instructions (optional)</label>
-    <textarea id="details" placeholder="Audience, language, length, key points..."></textarea>
+    <textarea id="details" maxlength="3000" placeholder="Audience, language, length, key points..."></textarea>
+
+    <label for="mediaUpload">Optional image upload — local preview only</label>
+    <input id="mediaUpload" type="file" accept="image/*">
+    <div id="imagePreview" class="preview" hidden>
+      <img id="previewImage" alt="Selected image preview">
+      <div class="actions">
+        <button class="secondary" onclick="clearImage()">Remove image</button>
+      </div>
+      <p class="notice">This image is only previewed in your browser. It is not uploaded to a server or sent to an AI service.</p>
+    </div>
 
     <div class="actions">
-      <button class="primary" onclick="generate()">Generate draft ✦</button>
+      <button class="primary" id="generateButton" onclick="generate()">Generate draft ✦</button>
       <button class="secondary" onclick="clearDraft()">Clear</button>
     </div>
 
@@ -136,11 +174,13 @@ footer{color:var(--muted);font-size:12px;padding:24px 0}
       <h3>Your draft</h3>
       <div id="result"></div>
       <div class="actions">
+        <button class="primary" onclick="saveProject()">Save Project</button>
         <button class="secondary" onclick="copyDraft()">Copy text</button>
         <button class="secondary" onclick="downloadDraft()">Download .txt</button>
       </div>
     </div>
-    <p class="notice">This starter edition generates templates in your browser. It is not connected to a real AI model and does not render actual image, video or audio files.</p>
+
+    <p class="notice">Starter edition: drafts are generated from local templates, not a real AI model. Image prompts are text only; this page does not generate images, audio or video files.</p>
   </section>
 
   <footer>CreatorAI Studio · Built for creative minds</footer>
@@ -148,192 +188,385 @@ footer{color:var(--muted);font-size:12px;padding:24px 0}
 </div>
 
 <script>
-const tools={
- script:{icon:"✍️",title:"Script Writer",desc:"Build a first draft for a video, story or presentation.",button:"Write a script"},
- caption:{icon:"#️⃣",title:"Captions & Hashtags",desc:"Create a social caption with a call to action.",button:"Create caption"},
- ideas:{icon:"💡",title:"Idea Generator",desc:"Find angles and topics for your next post.",button:"Generate ideas"},
- video:{icon:"🎬",title:"Video Planner",desc:"Outline a video with scenes and shot suggestions.",button:"Plan a video"},
- image:{icon:"🖼️",title:"Image Prompt Builder",desc:"Create a detailed prompt for an external image AI tool.",button:"Build prompt"},
- audio:{icon:"🎙️",title:"Voice-over Planner",desc:"Prepare narration and recording direction.",button:"Write voice-over"}
+"use strict";
+
+const STORAGE_KEY = "creatorai_projects";
+const MAX_PROJECTS = 50;
+
+const tools = {
+  script: {
+    icon: "✍️",
+    title: "Script Writer",
+    desc: "Build a first draft for a video, story or presentation.",
+    button: "Write a script"
+  },
+  caption: {
+    icon: "#️⃣",
+    title: "Captions & Hashtags",
+    desc: "Create a social caption with a call to action.",
+    button: "Create caption"
+  },
+  ideas: {
+    icon: "💡",
+    title: "Idea Generator",
+    desc: "Find angles and topics for your next post.",
+    button: "Generate ideas"
+  },
+  video: {
+    icon: "🎬",
+    title: "Video Planner",
+    desc: "Outline a video with scenes and shot suggestions.",
+    button: "Plan a video"
+  },
+  image: {
+    icon: "🖼️",
+    title: "Image Prompt Builder",
+    desc: "Create a detailed prompt for an external image AI tool.",
+    button: "Build prompt"
+  },
+  audio: {
+    icon: "🎙️",
+    title: "Voice-over Planner",
+    desc: "Prepare narration and recording direction.",
+    button: "Write voice-over"
+  }
 };
-let current="script";
-const cards=document.getElementById("cards");
-Object.keys(tools).forEach(key=>{
- const t=tools[key];
- const article=document.createElement("article");
- article.className="card";
- const icon=document.createElement("div");icon.className="emoji";icon.textContent=t.icon;
- const h=document.createElement("h3");h.textContent=t.title;
- const p=document.createElement("p");p.textContent=t.desc;
- const b=document.createElement("button");b.className="primary";b.textContent=t.button+" →";b.onclick=()=>openTool(key);
- article.append(icon,h,p,b);cards.appendChild(article);
+
+let current = "script";
+let previewObjectUrl = null;
+
+const cards = document.getElementById("cards");
+
+Object.keys(tools).forEach(key => {
+  const tool = tools[key];
+  const article = document.createElement("article");
+  article.className = "card";
+
+  const icon = document.createElement("div");
+  icon.className = "emoji";
+  icon.textContent = tool.icon;
+
+  const heading = document.createElement("h3");
+  heading.textContent = tool.title;
+
+  const description = document.createElement("p");
+  description.textContent = tool.desc;
+
+  const button = document.createElement("button");
+  button.className = "primary";
+  button.textContent = tool.button + " →";
+  button.addEventListener("click", () => openTool(key));
+
+  article.append(icon, heading, description, button);
+  cards.appendChild(article);
 });
-document.getElementById("nav").addEventListener("click",e=>{
- const b=e.target.closest("button[data-page]");
- if(!b)return;
- document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
- b.classList.add("active");
- if(b.dataset.page==="home")showHome();else openTool(b.dataset.page);
+
+document.getElementById("nav").addEventListener("click", event => {
+  const button = event.target.closest("button[data-page]");
+  if (!button) return;
+
+  if (button.dataset.page === "home") {
+    showHome();
+  } else {
+    openTool(button.dataset.page);
+  }
 });
-function openTool(key){
- if(!tools[key])return;
- current=key;
- document.getElementById("home").hidden=true;
- document.getElementById("editor").hidden=false;
- document.getElementById("toolTitle").textContent=tools[key].icon+" "+tools[key].title;
- document.getElementById("toolDesc").textContent=tools[key].desc;
- document.getElementById("outputArea").hidden=true;
- document.getElementById("topic").focus();
- document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===key));
- window.scrollTo({top:0,behavior:"smooth"});
+
+function setActiveNavigation(page) {
+  document.querySelectorAll(".nav button").forEach(button => {
+    button.classList.toggle("active", button.dataset.page === page);
+  });
 }
+
+function openTool(key) {
+  if (!tools[key]) return;
+
+  current = key;
+  document.getElementById("home").hidden = true;
+  document.getElementById("editor").hidden = false;
+  document.getElementById("toolTitle").textContent =
+    tools[key].icon + " " + tools[key].title;
+  document.getElementById("toolDesc").textContent = tools[key].desc;
+  document.getElementById("outputArea").hidden = true;
+
+  setActiveNavigation(key);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  document.getElementById("topic").focus();
+}
+
+function showHome() {
+  document.getElementById("home").hidden = false;
+  document.getElementById("editor").hidden = true;
+  setActiveNavigation("home");
+  renderProjects();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function readProjects() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+
+    const projects = JSON.parse(raw);
+    if (!Array.isArray(projects)) return [];
+
+    return projects.filter(project =>
+      project &&
+      typeof project.id === "number" &&
+      typeof project.topic === "string" &&
+      typeof project.result === "string" &&
+      typeof project.tool === "string" &&
+      tools[project.tool]
+    );
+  } catch (error) {
+    console.error("Could not read saved projects:", error);
+    return [];
+  }
+}
+
+function writeProjects(projects) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    return true;
+  } catch (error) {
+    console.error("Could not save projects:", error);
+    alert("Projects could not be saved. Your browser storage may be full or disabled.");
+    return false;
+  }
+}
+
 function saveProject() {
   const topic = document.getElementById("topic").value.trim();
-  const result = document.getElementById("result").textContent;
+  const result = document.getElementById("result").textContent.trim();
 
   if (!topic || !result) {
-    alert("Pehle ek draft generate karo.");
+    alert("Please enter a topic and generate a draft first.");
     return;
   }
 
-  let projects = [];
-  try {
-    projects = JSON.parse(localStorage.getItem("creatorai_projects") || "[]");
-  } catch (error) {
-    projects = [];
-  }
+  const projects = readProjects();
 
-  projects.unshift({
+  const project = {
     id: Date.now(),
-    topic: topic,
+    topic,
     tool: current,
     platform: document.getElementById("platform").value,
     style: document.getElementById("style").value,
     details: document.getElementById("details").value,
-    result: result
-  });
+    result,
+    savedAt: new Date().toISOString()
+  };
 
-  localStorage.setItem("creatorai_projects", JSON.stringify(projects.slice(0, 50)));
-  renderProjects();
-  alert("Project browser mein save ho gaya!");
+  projects.unshift(project);
+
+  if (writeProjects(projects.slice(0, MAX_PROJECTS))) {
+    renderProjects();
+    alert("Project saved in this browser!");
+  }
 }
 
 function renderProjects() {
   const container = document.getElementById("savedProjects");
-  if (!container) return;
-
-  let projects = [];
-  try {
-    projects = JSON.parse(localStorage.getItem("creatorai_projects") || "[]");
-  } catch (error) {
-    projects = [];
-  }
+  const projects = readProjects();
 
   container.replaceChildren();
 
-  if (!projects.length) {
-    container.textContent = "Abhi koi saved project nahi hai.";
+  if (projects.length === 0) {
+    const message = document.createElement("p");
+    message.className = "empty";
+    message.textContent = "No saved projects yet. Generate a draft and click Save Project.";
+    container.appendChild(message);
     return;
   }
 
   projects.forEach(project => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.marginTop = "10px";
+    const card = document.createElement("article");
+    card.className = "saved-card";
 
     const title = document.createElement("h3");
     title.textContent = project.topic;
 
     const info = document.createElement("p");
-    info.textContent = (tools[project.tool]?.title || "Project") + " · " + project.platform;
+    info.textContent =
+      (tools[project.tool]?.title || "Project") +
+      " · " + (project.platform || "No platform") +
+      (project.savedAt ? " · " + formatDate(project.savedAt) : "");
 
-    const open = document.createElement("button");
-    open.className = "secondary";
-    open.textContent = "Open";
-    open.onclick = () => {
-      openTool(project.tool);
-      document.getElementById("topic").value = project.topic;
-      document.getElementById("platform").value = project.platform;
-      document.getElementById("style").value = project.style;
-      document.getElementById("details").value = project.details;
-      document.getElementById("result").textContent = project.result;
-      document.getElementById("outputArea").hidden = false;
-    };
+    const openButton = document.createElement("button");
+    openButton.className = "secondary";
+    openButton.textContent = "Open";
+    openButton.addEventListener("click", () => openProject(project.id));
 
-    const remove = document.createElement("button");
-    remove.className = "secondary";
-    remove.textContent = "Delete";
-    remove.style.marginLeft = "8px";
-    remove.onclick = () => {
-      if (!confirm("Is project ko delete karna hai?")) return;
-      const updated = projects.filter(p => p.id !== project.id);
-      localStorage.setItem("creatorai_projects", JSON.stringify(updated));
-      renderProjects();
-    };
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "danger";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => deleteProject(project.id));
 
-    card.append(title, info, open, remove);
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    actions.append(openButton, deleteButton);
+
+    card.append(title, info, actions);
     container.appendChild(card);
   });
-    }
-  
-function showHome(){
- document.getElementById("home").hidden=false;
- document.getElementById("editor").hidden=true;
- document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page==="home"));
- window.scrollTo({top:0,behavior:"smooth"});
 }
-function generate(){
- const topic=document.getElementById("topic").value.trim();
- const platform=document.getElementById("platform").value;
- const style=document.getElementById("style").value;
- const details=document.getElementById("details").value.trim();
- if(!topic){alert("Please enter a topic first.");document.getElementById("topic").focus();return;}
- const tag=topic.split(/\s+/).join("").replace(/[^a-zA-Z0-9]/g,"");
- let text="";
- if(current==="script"){
- text=`TITLE: ${topic}\nPLATFORM: ${platform}\nTONE: ${style}\n\nHOOK\nHave you ever wondered about ${topic}? Stay with me to discover why it matters.\n\nMAIN SECTION\n1. Introduce ${topic} and explain why the audience should care.\n2. Share an interesting fact, example or key detail.\n3. Explain the main takeaway in simple language.\n\nCLOSING\nWhat do you think about ${topic}? Share your thoughts and follow for more.\n\nPRODUCTION NOTE\nAdd relevant visuals, clear on-screen text and natural pauses.`;
- }else if(current==="caption"){
- text=`${topic} ✨\n\nDiscover something interesting about ${topic}. Save this post for later and share it with someone who would enjoy it!\n\nWhat do you think? Tell me below 👇\n\n#${tag.slice(0,35)} #ContentCreator #CreatorCommunity #LearnSomethingNew\n\nPlatform: ${platform}\nTone: ${style}`;
- }else if(current==="ideas"){
- text=`CONTENT IDEAS: ${topic}\n\n1. Beginner's guide to ${topic}\n2. Five surprising facts about ${topic}\n3. Common mistakes people make with ${topic}\n4. Myth versus reality: ${topic}\n5. A step-by-step tutorial about ${topic}\n6. What people often misunderstand about ${topic}\n7. Answer the most common audience question about ${topic}\n8. Tell a short story connected to ${topic}\n9. Compare two approaches to ${topic}\n10. Make a quick checklist for ${topic}\n\nChoose an idea and adapt it to ${platform}.`;
- }else if(current==="video"){
- text=`VIDEO PLAN: ${topic}\nPLATFORM: ${platform}\n\nSCENE 1 — HOOK (opening)\nOpen with a question or striking visual connected to ${topic}.\n\nSCENE 2 — SETUP\nExplain what the video covers and why it matters.\n\nSCENE 3 — MAIN CONTENT\nBreak the subject into three clear points. Capture supporting shots and add readable on-screen text.\n\nSCENE 4 — WRAP-UP\nSummarise the main takeaway and invite viewers to comment or follow.\n\nSHOT CHECKLIST\n□ Opening shot\n□ Main talking-head or demonstration shots\n□ Supporting footage\n□ Close-up details\n□ Closing shot`;
- }else if(current==="image"){
- text=`IMAGE GENERATION PROMPT\n\nCreate a high-quality image about: ${topic}.\nVisual direction: ${style}.\nComposition: clear focal subject, balanced layout, thoughtful lighting, detailed textures and polished professional finish.\nIntended platform: ${platform}.\n\nAvoid blurry details, distorted objects, clutter and unwanted watermarks. Specify any text separately if your image tool supports accurate text rendering.\n\nThis is a text prompt, not an image file. Paste it into an image-generation service to create an image.`;
- }else{
- text=`VOICE-OVER DRAFT: ${topic}\nPLATFORM: ${platform}\n\n[OPENING — engaging delivery]\nLet's explore ${topic}.\n\n[MAIN SECTION — clear, natural pace]\nStart with the most important point. Explain it in short sentences, then add an example or story that makes the message memorable.\n\n[CLOSING — warm delivery]\nThanks for listening. Follow for more content like this.\n\nRECORDING CHECKLIST\n• Record in a quiet room.\n• Keep a consistent distance from the microphone.\n• Leave natural pauses between sections.\n• Listen back and remove mistakes during editing.\n\nThis is a text draft, not an audio recording.`;
- }
- if(details)text+=`\n\nEXTRA INSTRUCTIONS\n${details}`;
- document.getElementById("result").textContent=text;
- document.getElementById("outputArea").hidden=false;
-}
-function clearDraft(){
- document.getElementById("topic").value="";
- document.getElementById("details").value="";
- document.getElementById("outputArea").hidden=true;
- document.getElementById("result").textContent="";
-}
-async function copyDraft(){
- const text=document.getElementById("result").textContent;
- try{
- await navigator.clipboard.writeText(text);
- alert("Draft copied!");
- }catch(e){
- const area=document.createElement("textarea");
- area.value=text;document.body.appendChild(area);area.select();
- const ok=document.execCommand("copy");area.remove();
- alert(ok?"Draft copied!":"Copy failed. Select the result text and copy it manually.");
- }
-}
-function downloadDraft(){
- const text=document.getElementById("result").textContent;
- const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download="creatorai-draft.txt";a.click();
- URL.revokeObjectURL(url);
-}
-</script>
-</body>
-</html>
 
+function formatDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Saved project";
+
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  });
+}
+
+function openProject(id) {
+  const project = readProjects().find(item => item.id === id);
+  if (!project) {
+    alert("This saved project could not be found.");
+    renderProjects();
+    return;
+  }
+
+  openTool(project.tool);
+  document.getElementById("topic").value = project.topic || "";
+  document.getElementById("platform").value = project.platform || "YouTube";
+  document.getElementById("style").value =
+    project.style || "Engaging and friendly";
+  document.getElementById("details").value = project.details || "";
+  document.getElementById("result").textContent = project.result || "";
+  document.getElementById("outputArea").hidden = !project.result;
+
+  clearImage();
+}
+
+function deleteProject(id) {
+  if (!confirm("Delete this saved project? This cannot be undone.")) return;
+
+  const projects = readProjects().filter(project => project.id !== id);
+  if (writeProjects(projects)) {
+    renderProjects();
+  }
+}
+
+function exportProjects() {
+  const projects = readProjects();
+
+  if (projects.length === 0) {
+    alert("There are no saved projects to export.");
+    return;
+  }
+
+  const blob = new Blob(
+    [JSON.stringify(projects, null, 2)],
+    { type: "application/json;charset=utf-8" }
+  );
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "creatorai-projects-backup.json";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importProjects(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+
+      if (!Array.isArray(imported)) {
+        throw new Error("Backup must contain a project list.");
+      }
+
+      const valid = imported.filter(project =>
+        project &&
+        typeof project.topic === "string" &&
+        typeof project.result === "string" &&
+        typeof project.tool === "string" &&
+        tools[project.tool]
+      ).map(project => ({
+        id: Date.now() + Math.floor(Math.random() * 1000000),
+        topic: project.topic.slice(0, 500),
+        tool: project.tool,
+        platform: typeof project.platform === "string" ? project.platform : "YouTube",
+        style: typeof project.style === "string" ? project.style : "Engaging and friendly",
+        details: typeof project.details === "string" ? project.details.slice(0, 3000) : "",
+        result: project.result,
+        savedAt: new Date().toISOString()
+      }));
+
+      if (valid.length === 0) {
+        alert("No valid CreatorAI projects were found in this backup.");
+        return;
+      }
+
+      const existing = readProjects();
+      const combined = [...valid, ...existing].slice(0, MAX_PROJECTS);
+
+      if (writeProjects(combined)) {
+        renderProjects();
+        alert("Backup imported. Your saved project list has been updated.");
+      }
+    } catch (error) {
+      alert("Could not import this file. Please select a valid CreatorAI JSON backup.");
+      console.error("Import failed:", error);
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  reader.onerror = () => {
+    alert("The selected file could not be read.");
+    event.target.value = "";
+  };
+
+  reader.readAsText(file);
+}
+
+function generate() {
+  const topic = document.getElementById("topic").value.trim();
+  const platform = document.getElementById("platform").value;
+  const style = document.getElementById("style").value;
+  const details = document.getElementById("details").value.trim();
+
+  if (!topic) {
+    alert("Please enter a topic first.");
+    document.getElementById("topic").focus();
+    return;
+  }
+
+  const tag = topic.replace(/\s+/g, "").replace(/[^a-zA-Z0-9]/g, "");
+  let text = "";
+
+  if (current === "script") {
+    text = `TITLE: ${topic}
+PLATFORM: ${platform}
+TONE: ${style}
+
+HOOK
+Have you ever wondered about ${topic}? Stay with me to discover why it matters.
+
+MAIN SECTION
+1. Introduce ${topic} and explain why the audience should care.
+2. Share an interesting fact, example or key detail.
+3. Explain the main takeaway in simple language.
+
+CLOSING
+What do you think about ${topic}? Share your thoughts and follow for more.
+
+PRODUCTION NOTE
+Add relevant visuals, clear on-screen text and natural pauses.`;
+  } else if (current === "caption") {
+    text = `${topic} ✨
+
+  
